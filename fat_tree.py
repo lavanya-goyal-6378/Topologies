@@ -1,5 +1,6 @@
 from mininet.topo import Topo
 from mininet.net import Mininet
+from mininet.node import Controller, OVSKernelSwitch
 from mininet.log import setLogLevel
 from mininet.cli import CLI
 
@@ -32,11 +33,12 @@ def run ():
 	topo = FatTree4()
 	net= Mininet(topo = topo, autoStaticArp=True)
 	net.start()
-	print("Enabling STP to prevent loops...")
 	for sw in net.switches:
-		sw.cmd('ovs-vsctl set bridge', sw.name, 'stp_enable=true')
+		sw.cmd(f'ovs-vsctl set-fail-mode {sw.name} standalone')
+		sw.cmd(f'ovs-vsctl set bridge {sw.name} stp_enable=true')
 	import time
-	time.sleep(2)
+	time.sleep(30)
+	
 	CLI(net)
 	net.stop()
 if __name__ == '__main__':
