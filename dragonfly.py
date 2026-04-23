@@ -31,6 +31,7 @@ def topology():
     net.addLink(g2_s0,g2_s1)
     net.addLink(g0_s0,g1_s0) 
     net.addLink(g1_s0,g2_s0)
+	net.addLink(g0_s0,g2_s0)
     net.start()
     
     print("\n[!] Configuring Dragonfly Switches...")
