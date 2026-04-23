@@ -5,55 +5,57 @@ from mininet.cli import CLI
 from mininet.log import setLogLevel
 import time
 
-class DragonflyTopo(Topo):
-    def build(self, a=2, g=3, h=1):
-        """
-        a: switches per group
-        g: number of groups
-        h: optical links per switch to other groups
-        """
-        switches = []
-        for i in range(g):
-            group_switches = []
-            for j in range(a):
-                sw = self.addSwitch(f'g{i}s{j}')
-                group_switches.append(sw)
-                switches.append(sw)
+def topology():
+        
+    net = Mininet(controller=None)
+    s1=net.addSwitch('s1')
+    s2=net.addSwitch('s2')
+    s3=net.addSwitch('s3')
+    s4=net.addSwitch('s4')
+    s5=net.addSwitch('s5')
+    s6=net.addSwitch('s6')
+    h1 = net.addHost('h1')
+    h2 = net.addHost('h2')
+    h3 = net.addHost('h3')
+    h4 = net.addHost('h4')
+    h5 = net.addHost('h5')
+    h6 = net.addHost('h6')
+    net.addLink(h1,s1)
+    net.addLink(h2,s2)
+    net.addLink(h3,s3)
+    net.addLink(h4,s4)
+    net.addLink(h5,s5)
+    net.addLink(h6,s6)
+    net.addLink(s1,s3)
+    net.addLink(s2,s3)
+    net.addLink(s3,s4)
+    net.addLink(s1,s2)
+    net.addLink(s5,s6)
+    net.addLink(s3,s5)
 
-                # Add hosts to each switch
-                h1 = self.addHost(f'g{i}s{j}h1')
-                self.addLink(h1, sw)
-            
-            # Internal Group Links (Intra-group) 
-            for i_idx in range(len(group_switches)):
-                for j_idx in range(i_idx + 1, len(group_switches)):
-                    self.addLink(group_switches[i_idx], group_switches[j_idx])
-
-        # Global Links (Inter-group)
-        for i in range(g):
-            for j in range(i + 1, g):
-                # Connect first switch of group i to first switch of group j
-                self.addLink(f'g{i}s0', f'g{j}s0')
-
-def run():
-    topo = DragonflyTopo()
-    net = Mininet(topo=topo, controller=None)
-    
     net.start()
     
     print("\n[!] Configuring Dragonfly Switches...")
-    for sw in net.switches:
-        sw.cmd(f'ovs-vsctl set-fail-mode {sw.name} standalone')
-        sw.cmd(f'ovs-vsctl set bridge {sw.name} stp_enable=true')
 
+    s1.cmd(f'ovs-vsctl set-fail-mode s1 standalone')
+    s2.cmd(f'ovs-vsctl set-fail-mode s2 standalone')
+    s3.cmd(f'ovs-vsctl set-fail-mode s3 standalone')
+    s4.cmd(f'ovs-vsctl set-fail-mode s4 standalone')
+    s5.cmd(f'ovs-vsctl set-fail-mode s5 standalone')
+    s6.cmd(f'ovs-vsctl set-fail-mode s6 standalone')
+
+    s1.cmd(f'ovs-vsctl set Bridge s1 stp_enable=true')
+    s2.cmd(f'ovs-vsctl set Bridge s2 stp_enable=true')
+    s3.cmd(f'ovs-vsctl set Bridge s3 stp_enable=true')
+    s4.cmd(f'ovs-vsctl set Bridge s4 stp_enable=true')
+    s5.cmd(f'ovs-vsctl set Bridge s5 stp_enable=true')
+    s6.cmd(f'ovs-vsctl set Bridge s6 stp_enable=true')
+	
     time.sleep(30)
-    
     print("\n[+] Testing Dragonfly Connectivity...")
     net.pingAll(timeout = 0.5)
-    
     CLI(net)
     net.stop()
-
 if __name__ == '__main__':
     setLogLevel('info')
-    run()
+    topology()
